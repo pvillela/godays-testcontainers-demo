@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"godays-testcontainers-demo/userservice/api"
 	"log"
 	"net/http"
 	"os"
+	"userservice/api"
 )
 
 func main() {
