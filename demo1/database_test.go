@@ -2,57 +2,26 @@ package demo1
 
 import (
 	"context"
-	"fmt"
-	"github.com/docker/go-connections/nat"
+	"demo-simple/util"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	tc "github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"log"
-	"os"
 	"strconv"
 	"testing"
 )
 
 var (
 	_repo *userRepo
-	_conn *sqlx.DB
+	//_conn *sqlx.DB
 )
 
 func TestMain(m *testing.M) {
-	log.Println("Starting postgres container...")
-	postgresPort := nat.Port("5432/tcp")
-	postgres, err := tc.GenericContainer(context.Background(),
-		tc.GenericContainerRequest{
-			ContainerRequest: tc.ContainerRequest{
-				Image:        "postgres",
-				ExposedPorts: []string{postgresPort.Port()},
-				Env: map[string]string{
-					"POSTGRES_PASSWORD": "pass",
-					"POSTGRES_USER":     "user",
-				},
-				WaitingFor: wait.ForAll(
-					wait.ForLog("database system is ready to accept connections"),
-					wait.ForListeningPort(postgresPort),
-				),
-			},
-			Started: true, // auto-start the container
-		})
-	if err != nil {
-		log.Fatal("start:", err)
-	}
+	ctx := context.Background()
+	postgres, postgresUrl := util.LaunchPostgres(ctx)
 
-	hostPort, err := postgres.MappedPort(context.Background(), postgresPort)
-	if err != nil {
-		log.Fatal("map:", err)
-	}
-	postgresURLTemplate := "postgres://user:pass@localhost:%s?sslmode=disable"
-	postgresURL := fmt.Sprintf(postgresURLTemplate, hostPort.Port())
-	log.Printf("Postgres container started, running at:  %s\n", postgresURL)
-
-	_conn, err = sqlx.Connect("postgres", postgresURL)
+	_conn, err := sqlx.Connect("postgres", postgresUrl)
 	if err != nil {
 		log.Fatal("connect:", err)
 	}
@@ -62,7 +31,16 @@ func TestMain(m *testing.M) {
 	}
 
 	_repo = NewRepo(_conn)
-	os.Exit(m.Run())
+	exitCode := m.Run()
+	log.Println("exit code from tests:", exitCode)
+
+	err = postgres.Terminate(ctx)
+	if err != nil {
+		log.Fatal("error shutting down Postgres container:", err)
+	}
+	log.Println("Postgres container shut down")
+
+	//os.Exit(exitCode)
 }
 
 func TestRepoImp(t *testing.T) {
