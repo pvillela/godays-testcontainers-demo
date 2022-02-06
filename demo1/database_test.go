@@ -2,7 +2,7 @@ package demo1
 
 import (
 	"context"
-	"demo-simple/util"
+	"demo1/util"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"

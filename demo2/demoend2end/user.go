@@ -1,4 +1,4 @@
-package test
+package demoend2end
 
 import (
 	"fmt"

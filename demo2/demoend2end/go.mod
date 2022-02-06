@@ -1,4 +1,4 @@
-module demo-end2end
+module demoend2end
 
 go 1.18
 

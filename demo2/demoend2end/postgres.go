@@ -1,8 +1,8 @@
-package test
+package demoend2end
 
 import (
 	"context"
-	"demo-end2end/wait"
+	"demoend2end/wait"
 	"fmt"
 	"github.com/docker/go-connections/nat"
 	tc "github.com/testcontainers/testcontainers-go"
